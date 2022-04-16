@@ -8,6 +8,35 @@ parser = DataPackageParser(ELECTION_TYPES)
 RULES = parser.build_rules()
 CONTEST_TYPES = ("by", "by election", "by-election", "election")
 
+def parse(identifier):
+    """Parse an identifier
+    Args:
+        identifier (str): String identifier we want to validate
+    Returns:
+        IDBuilder
+    """
+    if not isinstance(identifier, str):
+        return False
+
+    id_parts = identifier.split(".")
+
+    # must have at least an election type and a date
+    if len(id_parts) < 2:
+        return False
+
+    # check for invalid characters
+    for part in id_parts:
+        if slugify(part) != str(part):
+            return False
+
+    election_type = id_parts.pop(0)
+    date = id_parts.pop(-1)
+
+    try:
+        builder = IdBuilder(election_type, date)
+        return builder
+    except (ValueError, NotImplementedError):
+        return False
 
 def validate(identifier):
     """Validate an identifier
